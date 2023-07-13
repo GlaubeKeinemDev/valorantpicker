@@ -1,7 +1,7 @@
 # Valorant Agent Picker
 
 ### An instant agent picker for Valorant. This is a simple console application written in Python. This application uses the client wrapper valclient.py. With the usage of a client wrapper there is no need to add any type of credential it uses the local client.
-
+> NOTE: An instant agent selector is against the Valorant tos and you could get punished for using it.
 ## How to use
 1. Download the zip file from the latest release
 2. Extract the zip file into a folder on your computer
