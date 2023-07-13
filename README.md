@@ -16,7 +16,8 @@
 {
   "time_between_requests": 1,
   "agent_to_pick": "Reyna",
-  "region": "eu"
+  "region": "eu",
+  "language_file": "lang_en.json"
 }
 ```
 
@@ -39,6 +40,21 @@
      * ap
      * kr
      * pbe
+4. language_file
+   * json file which includes all strings in a defined format 
+## Language file
+Example language file. If you want to implement your own language use a json file and stick to this key names
+```json
+{
+  "invalid_agent": "is not a valid agent",
+  "available_agents": "available agents:",
+  "invalid_region": "isn't a valid region. Regions:",
+  "valorant_not_running": "Valorant isn't running",
+  "try_again": "Try again? (y/n): ",
+  "pregame_state": "Pregame found",
+  "pregame_not_found": "Currently not in a pregame"
+}
+```
 ## Troubleshooting
 If the program instantly closes after start:
 * Be sure there is a config.json in the same directory 
@@ -46,6 +62,8 @@ If the program instantly closes after start:
 * Be sure your agent set in the config is available
 * Be sure your Valorant is running
 * Try to run the .exe file as an administrative user
+* Be sure your defined language file inside the config exists
+* Be sure your language file sticks to the default format of key names
 ## Credits
 * [Valclient.py](https://github.com/colinhartigan/valclient.py) - used as Valorant client wrapper
 * [PyInstaller](https://pyinstaller.org/en/stable/) - used to transform Python Code to an .exe file
