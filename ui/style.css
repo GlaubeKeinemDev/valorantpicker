@@ -1,0 +1,341 @@
+body {
+    background: #4b4b4b;
+    font-family: 'Poppins', Arial;
+    color: white;
+    overflow: hidden;
+}
+
+h5.modal-title {
+    color: black;
+}
+
+input[type=checkbox] {
+    height: 0;
+    width: 0;
+    visibility: hidden;
+}
+
+label {
+    cursor: pointer;
+    text-indent: -9999px;
+    width: 100%;
+    max-width: 50px;
+    height: auto;
+    background: grey;
+    display: block;
+    border-radius: 100px;
+    position: relative;
+}
+
+label:after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border-radius: 90px;
+    transition: 0.3s;
+    display: flex;
+}
+
+input:checked + label {
+    background: #bada55;
+}
+
+input:checked + label:after {
+    left: calc(100% - 5px);
+    transform: translateX(-100%);
+}
+
+label:active:after {
+    width: 20px;
+}
+
+#agent-holder img {
+    cursor: pointer;
+    border-radius: 50%;
+}
+
+#agent-holder img.active {
+    border-radius: 10px;
+    border: 1px solid white;
+}
+
+.tab-page {
+    border: 1px solid white;
+    padding: .5rem;
+    min-height: 300px;
+    max-height: 470px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+.tab-page::-webkit-scrollbar {
+    width: 0.5em;
+}
+
+.tab-page::-webkit-scrollbar-thumb {
+    background-color: transparent;
+}
+
+.tab-page::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+#modal_backdrop {
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 1000000;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#main_content {
+    position: relative;
+}
+
+.backdrop {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+}
+
+#instalock .inner {
+    position: relative;
+}
+
+.blur_out {
+    filter: blur(5px);
+    -webkit-filter: blur(5px);
+}
+
+/* Loading circle */
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #696969;
+    border-top: 4px solid #000;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Tpast start */
+.toast {
+    position: absolute;
+    border-radius: 12px;
+    background: #fff;
+    padding: 20px 35px 20px 25px;
+    box-shadow: 0 6px 20px -5px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    top: 0;
+    right: 0;
+    transform: translateX(400px);
+    z-index: 1;
+    opacity: 1;
+}
+
+.toast.custom-transition {
+    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.35);
+}
+
+.toast.active {
+    transform: unset !important;
+}
+
+.toast .toast-content {
+    display: flex;
+    align-items: center;
+}
+
+.toast-content .check {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 35px;
+    min-width: 35px;
+    background-color: #4070f4;
+    color: #fff;
+    font-size: 20px;
+    border-radius: 50%;
+}
+
+.toast-content .message {
+    display: flex;
+    flex-direction: column;
+    margin: 0 20px;
+}
+
+.message .text {
+    font-size: 16px;
+    font-weight: 400;
+    color: #666666;
+}
+
+.message .text.text-1 {
+    font-weight: 600;
+    color: #333;
+}
+
+.toast .close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    padding: 5px;
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.toast .close:hover {
+    opacity: 1;
+}
+
+.toast .progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    width: 100%;
+
+}
+
+.toast .progress:before {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    height: 100%;
+    width: 100%;
+    background-color: #4070f4;
+}
+
+.progress.active:before {
+    animation: progress 5s linear forwards;
+}
+
+@keyframes progress {
+    100% {
+        right: 100%;
+    }
+}
+
+/* Match info!!! */
+.match_info {
+    padding-top: 1rem;
+}
+
+.match_info .map_info img {
+    max-width: 700px;
+}
+
+.match_info .player_card_inner {
+    padding-right: .5rem;
+    border-radius: 10px;
+}
+
+.match_info .seperator {
+    color: #a6a6a6;
+}
+
+.match_info .vertical-line::before {
+    content: "";
+    width: 2px;
+    height: 25px;
+    transform: translate(-15px, 0px);
+    background-color: black;
+    position: absolute;
+}
+
+.match_info .player_card_inner .player_agent {
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+    overflow: hidden;
+    min-width: 55px;
+}
+
+.match_info.detailed .player_card_inner .statsdetails {
+    padding-left: 1.7rem;
+}
+
+.match_info.detailed .player_card_inner .player_name {
+    max-width: 640px;
+}
+
+.match_info .team_blue .player_card_inner {
+    background-color: #1a312a;
+}
+
+.match_info .team_blue .player_card_inner .player_agent {
+    background-color: #407969;
+}
+
+.match_info .team_blue .player_card_inner .player_name {
+    color: #68c1aa;
+}
+
+
+.match_info .team_red .player_card_inner {
+    background-color: #3d1716;
+}
+
+.match_info .team_red .player_card_inner .player_agent {
+    background-color: #953937;
+}
+
+.match_info .team_red .player_card_inner .player_name {
+    color: #f05c57;
+}
+
+.circle {
+    height: 80px;
+    aspect-ratio: 1;
+    position: relative;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: conic-gradient(#ccc 60deg, transparent 0deg);
+}
+
+.circle::before {
+    content: "";
+    position: absolute;
+    height: 70px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background-color: #4b4b4b;
+}
+
+.circle:not(.second):not(.green):not(.red) {
+    z-index: 1;
+}
+
+.circle.second {
+    position: absolute !important;
+    transform: translateY(-100%);
+}
+
+.circle.green {
+    background: conic-gradient(#407969 120deg, #5e5e5e 0deg);
+}
+
+.circle.red {
+    background: conic-gradient(#f05c57 60deg, #5e5e5e 0deg);
+}
+
+
+

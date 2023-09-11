@@ -1,101 +1,20 @@
 import valclient
-import requests
-import time
-import json
-from valclient.exceptions import HandshakeError
-import sys
 
-# CONFIG START
-config = None
+client = valclient.Client(region="eu")
+client.activate()
 
-try:
-    config = json.load(open("config.json"))
-except FileNotFoundError:
-    pass
+# Meustes Match (comp)
+history = client.fetch_match_history(queue_id="competitive")
+matchId = history["History"][0]["MatchID"]
+details = client.fetch_match_details(matchId)
+print(details)
+mapUrl = details["matchInfo"]["mapId"]
+seasonId = details["matchInfo"]["seasonId"]
+playerDetails = details["players"]
 
-if config is None:
-    print("Cannot find config.json file")
-    sys.exit()
+# Aktueller match output von valoranthelper - 11-09
+# {"startTime": 1690464076896, "gameLength": 1923929, "gameId": "e6d24b2f-dc04-4996-8089-dd929cdc7ddd", "player": [{"id": "bc114953-7288-55b2-9875-647ab0bf6225", "playername": "haste ma nh bier", "playeragent": "a3bfb853-43b2-7238-a4f1-ad90e9e46bcc", "playeragenticon": "https://media.valorant-api.com/agents/a3bfb853-43b2-7238-a4f1-ad90e9e46bcc/displayicon.png", "team": "Red", "competitveupdates": {"ratingBefore": 75, "ratingAfter": 93, "ratingDifference": 18}}], "map": {"name": "Lotus", "icon": "https://media.valorant-api.com/maps/2fe4ed3a-450a-948b-6d6b-e89a78e680a9/listviewicon.png"}, "team_blue": [{"id": "93000dba-7e0c-553c-bae9-3bca0fdd8188", "name": "NoN4me", "team": "Red", "rank": {"name": "GOLD 1", "color": "eccf56ff", "background": "eec56aff", "icon": "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/12/largeicon.png"}, "agent": {"name": "Sage", "description": "Die chinesische W\u00e4chterin Sage garantiert Sicherheit f\u00fcr sich und ihr Team, wohin auch immer sie geht. Dank ihrer einzigartigen F\u00e4higkeit, gefallene Verb\u00fcndete wiederzuerwecken und Angriffe abzuwehren, ist sie auf dem Schlachtfeld das Auge des Sturms.", "icon": "https://media.valorant-api.com/agents/569fdd95-4d10-43ab-ca70-79becc718b46/displayicon.png"}, "stats": {"kills": 12, "deaths": 10, "assists": 2, "avg_damage": 99}}, {"id": "0c0b7f81-37ae-5a64-a1d5-e85095042c78", "name": "spaghetis", "team": "Red", "rank": {"name": "PLATINUM 1", "color": "59a9b6ff", "background": "00c7c0ff", "icon": "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/15/largeicon.png"}, "agent": {"name": "Omen", "description": "Omen ist das Phantom einer Erinnerung und jagt in den Schatten. Er kann Gegnern die Sicht nehmen und sich \u00fcber die Karte teleportieren. Wenn die Gegner dann in Panik geraten und sein n\u00e4chstes Ziel herausfinden wollen, schl\u00e4gt er zu.", "icon": "https://media.valorant-api.com/agents/8e253930-4c05-31dd-1b6c-968525494517/displayicon.png"}, "stats": {"kills": 20, "deaths": 10, "assists": 4, "avg_damage": 122}}, {"id": "e0ff111f-5086-5d90-a67c-c2e800cae6c3", "name": "WiwiWinnie", "team": "Red", "rank": {"name": "GOLD 3", "color": "eccf56ff", "background": "eec56aff", "icon": "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/14/largeicon.png"}, "agent": {"name": "Raze", "description": "Die explosive Raze bringt eine laute Pers\u00f6nlichkeit und dicke Knarren aus Brasilien mit. Durch ihre brachiale Spielweise ist sie besonders gut darin, Gegner aufzuscheuchen und beengte R\u00e4ume mit einer gro\u00dfz\u00fcgigen Portion \u201eBumm\u201c zu s\u00e4ubern.", "icon": "https://media.valorant-api.com/agents/f94c3b30-42be-e959-889c-5aa313dba261/displayicon.png"}, "stats": {"kills": 13, "deaths": 18, "assists": 8, "avg_damage": 101}}, {"id": "bc114953-7288-55b2-9875-647ab0bf6225", "name": "haste ma nh bier", "team": "Red", "rank": {"name": "SILVER 2", "color": "bbc2c2ff", "background": "d1d1d1ff", "icon": "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/10/largeicon.png"}, "agent": {"name": "Reyna", "description": "Reyna kommt aus dem Herzen Mexikos, brilliert in K\u00e4mpfen gegen einzelne Gegner und wird mit jedem Kill st\u00e4rker. K\u00f6nnen ist das einzige Limit f\u00fcr ihr Potenzial und sie h\u00e4ngt sehr von der erbrachten Leistung ab. ", "icon": "https://media.valorant-api.com/agents/a3bfb853-43b2-7238-a4f1-ad90e9e46bcc/displayicon.png"}, "stats": {"kills": 14, "deaths": 15, "assists": 4, "avg_damage": 96}}, {"id": "e6e00c4b-3ff9-5e9a-a3c0-431a6cc1a356", "name": "maxxx1406", "team": "Red", "rank": {"name": "GOLD 2", "color": "eccf56ff", "background": "eec56aff", "icon": "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/13/largeicon.png"}, "agent": {"name": "KAY/O", "description": "KAY/O ist eine Kriegsmaschine mit nur einem Zweck:  die Neutralisierung von Radiants. Er kann gegnerische F\u00e4higkeiten unterdr\u00fccken, womit er Gegenangriffe effektiv verhindert und sich und seinen Verb\u00fcndeten so den entscheidenden Vorteil verschafft.", "icon": "https://media.valorant-api.com/agents/601dbbe7-43ce-be57-2a40-4abd24953621/displayicon.png"}, "stats": {"kills": 19, "deaths": 10, "assists": 6, "avg_damage": 129}}], "team_red": [{"id": "3fb99db5-f6a6-5ae1-afd8-4dceccadb0fe", "name": "hngpophng", "team": "Blue", "rank": {"name": "SILVER 3", "color": "bbc2c2ff", "background": "d1d1d1ff", "icon": "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/11/largeicon.png"}, "agent": {"name": "Chamber", "description": "Gut gekleidet und bewaffnet vertreibt der franz\u00f6sische Waffendesigner Chamber Angreifer mit t\u00f6dlicher Pr\u00e4zision. Mit seinem individuellen Arsenal beh\u00e4lt er alles im Blick, schaltet Gegner aus der Ferne aus und hat f\u00fcr jeden Plan einen Plan\u00a0B.", "icon": "https://media.valorant-api.com/agents/22697a3d-45bf-8dd7-4fec-84a9e28c69d7/displayicon.png"}, "stats": {"kills": 12, "deaths": 16, "assists": 4, "avg_damage": 140}}, {"id": "36022804-c2d8-596d-8a45-eaa4ab634fe1", "name": "Tasky", "team": "Blue", "rank": {"name": "GOLD 1", "color": "eccf56ff", "background": "eec56aff", "icon": "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/12/largeicon.png"}, "agent": {"name": "Omen", "description": "Omen ist das Phantom einer Erinnerung und jagt in den Schatten. Er kann Gegnern die Sicht nehmen und sich \u00fcber die Karte teleportieren. Wenn die Gegner dann in Panik geraten und sein n\u00e4chstes Ziel herausfinden wollen, schl\u00e4gt er zu.", "icon": "https://media.valorant-api.com/agents/8e253930-4c05-31dd-1b6c-968525494517/displayicon.png"}, "stats": {"kills": 10, "deaths": 16, "assists": 5, "avg_damage": 105}}, {"id": "b0f9838b-8713-5b04-b2b1-d620e048b556", "name": "Kamrxn", "team": "Blue", "rank": {"name": "SILVER 2", "color": "bbc2c2ff", "background": "d1d1d1ff", "icon": "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/10/largeicon.png"}, "agent": {"name": "KAY/O", "description": "KAY/O ist eine Kriegsmaschine mit nur einem Zweck:  die Neutralisierung von Radiants. Er kann gegnerische F\u00e4higkeiten unterdr\u00fccken, womit er Gegenangriffe effektiv verhindert und sich und seinen Verb\u00fcndeten so den entscheidenden Vorteil verschafft.", "icon": "https://media.valorant-api.com/agents/601dbbe7-43ce-be57-2a40-4abd24953621/displayicon.png"}, "stats": {"kills": 8, "deaths": 16, "assists": 6, "avg_damage": 106}}, {"id": "73dfe274-baf2-5b88-b2e4-cf5d39766d60", "name": "anime th1ghs", "team": "Blue", "rank": {"name": "GOLD 3", "color": "eccf56ff", "background": "eec56aff", "icon": "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/14/largeicon.png"}, "agent": {"name": "Reyna", "description": "Reyna kommt aus dem Herzen Mexikos, brilliert in K\u00e4mpfen gegen einzelne Gegner und wird mit jedem Kill st\u00e4rker. K\u00f6nnen ist das einzige Limit f\u00fcr ihr Potenzial und sie h\u00e4ngt sehr von der erbrachten Leistung ab. ", "icon": "https://media.valorant-api.com/agents/a3bfb853-43b2-7238-a4f1-ad90e9e46bcc/displayicon.png"}, "stats": {"kills": 21, "deaths": 15, "assists": 2, "avg_damage": 163}}, {"id": "8c9e7d2e-2abd-5bbd-ac5d-3e4884b4d87f", "name": "Piplup", "team": "Blue", "rank": {"name": "GOLD 3", "color": "eccf56ff", "background": "eec56aff", "icon": "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/14/largeicon.png"}, "agent": {"name": "Sage", "description": "Die chinesische W\u00e4chterin Sage garantiert Sicherheit f\u00fcr sich und ihr Team, wohin auch immer sie geht. Dank ihrer einzigartigen F\u00e4higkeit, gefallene Verb\u00fcndete wiederzuerwecken und Angriffe abzuwehren, ist sie auf dem Schlachtfeld das Auge des Sturms.", "icon": "https://media.valorant-api.com/agents/569fdd95-4d10-43ab-ca70-79becc718b46/displayicon.png"}, "stats": {"kills": 12, "deaths": 15, "assists": 4, "avg_damage": 130}}], "teamstats": [{"Red": {"won": true, "roundsWon": 13}}, {"Blue": {"won": false, "roundsWon": 6}}], "playerPerformance": [{"id": "bc114953-7288-55b2-9875-647ab0bf6225", "name": "haste ma nh bier", "team": "Red", "rank": {"name": "SILVER 2", "color": "bbc2c2ff", "background": "d1d1d1ff", "icon": "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/10/largeicon.png"}, "agent": {"name": "Reyna", "description": "Reyna kommt aus dem Herzen Mexikos, brilliert in K\u00e4mpfen gegen einzelne Gegner und wird mit jedem Kill st\u00e4rker. K\u00f6nnen ist das einzige Limit f\u00fcr ihr Potenzial und sie h\u00e4ngt sehr von der erbrachten Leistung ab. ", "icon": "https://media.valorant-api.com/agents/a3bfb853-43b2-7238-a4f1-ad90e9e46bcc/displayicon.png"}, "stats": {"kills": 14, "deaths": 15, "assists": 4, "avg_damage": 96}}, {"id": "93000dba-7e0c-553c-bae9-3bca0fdd8188", "name": "NoN4me", "team": "Red", "rank": {"name": "GOLD 1", "color": "eccf56ff", "background": "eec56aff", "icon": "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/12/largeicon.png"}, "agent": {"name": "Sage", "description": "Die chinesische W\u00e4chterin Sage garantiert Sicherheit f\u00fcr sich und ihr Team, wohin auch immer sie geht. Dank ihrer einzigartigen F\u00e4higkeit, gefallene Verb\u00fcndete wiederzuerwecken und Angriffe abzuwehren, ist sie auf dem Schlachtfeld das Auge des Sturms.", "icon": "https://media.valorant-api.com/agents/569fdd95-4d10-43ab-ca70-79becc718b46/displayicon.png"}, "stats": {"kills": 12, "deaths": 10, "assists": 2, "avg_damage": 99}}, {"id": "e0ff111f-5086-5d90-a67c-c2e800cae6c3", "name": "WiwiWinnie", "team": "Red", "rank": {"name": "GOLD 3", "color": "eccf56ff", "background": "eec56aff", "icon": "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/14/largeicon.png"}, "agent": {"name": "Raze", "description": "Die explosive Raze bringt eine laute Pers\u00f6nlichkeit und dicke Knarren aus Brasilien mit. Durch ihre brachiale Spielweise ist sie besonders gut darin, Gegner aufzuscheuchen und beengte R\u00e4ume mit einer gro\u00dfz\u00fcgigen Portion \u201eBumm\u201c zu s\u00e4ubern.", "icon": "https://media.valorant-api.com/agents/f94c3b30-42be-e959-889c-5aa313dba261/displayicon.png"}, "stats": {"kills": 13, "deaths": 18, "assists": 8, "avg_damage": 101}}, {"id": "36022804-c2d8-596d-8a45-eaa4ab634fe1", "name": "Tasky", "team": "Blue", "rank": {"name": "GOLD 1", "color": "eccf56ff", "background": "eec56aff", "icon": "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/12/largeicon.png"}, "agent": {"name": "Omen", "description": "Omen ist das Phantom einer Erinnerung und jagt in den Schatten. Er kann Gegnern die Sicht nehmen und sich \u00fcber die Karte teleportieren. Wenn die Gegner dann in Panik geraten und sein n\u00e4chstes Ziel herausfinden wollen, schl\u00e4gt er zu.", "icon": "https://media.valorant-api.com/agents/8e253930-4c05-31dd-1b6c-968525494517/displayicon.png"}, "stats": {"kills": 10, "deaths": 16, "assists": 5, "avg_damage": 105}}, {"id": "b0f9838b-8713-5b04-b2b1-d620e048b556", "name": "Kamrxn", "team": "Blue", "rank": {"name": "SILVER 2", "color": "bbc2c2ff", "background": "d1d1d1ff", "icon": "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/10/largeicon.png"}, "agent": {"name": "KAY/O", "description": "KAY/O ist eine Kriegsmaschine mit nur einem Zweck:  die Neutralisierung von Radiants. Er kann gegnerische F\u00e4higkeiten unterdr\u00fccken, womit er Gegenangriffe effektiv verhindert und sich und seinen Verb\u00fcndeten so den entscheidenden Vorteil verschafft.", "icon": "https://media.valorant-api.com/agents/601dbbe7-43ce-be57-2a40-4abd24953621/displayicon.png"}, "stats": {"kills": 8, "deaths": 16, "assists": 6, "avg_damage": 106}}, {"id": "0c0b7f81-37ae-5a64-a1d5-e85095042c78", "name": "spaghetis", "team": "Red", "rank": {"name": "PLATINUM 1", "color": "59a9b6ff", "background": "00c7c0ff", "icon": "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/15/largeicon.png"}, "agent": {"name": "Omen", "description": "Omen ist das Phantom einer Erinnerung und jagt in den Schatten. Er kann Gegnern die Sicht nehmen und sich \u00fcber die Karte teleportieren. Wenn die Gegner dann in Panik geraten und sein n\u00e4chstes Ziel herausfinden wollen, schl\u00e4gt er zu.", "icon": "https://media.valorant-api.com/agents/8e253930-4c05-31dd-1b6c-968525494517/displayicon.png"}, "stats": {"kills": 20, "deaths": 10, "assists": 4, "avg_damage": 122}}, {"id": "e6e00c4b-3ff9-5e9a-a3c0-431a6cc1a356", "name": "maxxx1406", "team": "Red", "rank": {"name": "GOLD 2", "color": "eccf56ff", "background": "eec56aff", "icon": "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/13/largeicon.png"}, "agent": {"name": "KAY/O", "description": "KAY/O ist eine Kriegsmaschine mit nur einem Zweck:  die Neutralisierung von Radiants. Er kann gegnerische F\u00e4higkeiten unterdr\u00fccken, womit er Gegenangriffe effektiv verhindert und sich und seinen Verb\u00fcndeten so den entscheidenden Vorteil verschafft.", "icon": "https://media.valorant-api.com/agents/601dbbe7-43ce-be57-2a40-4abd24953621/displayicon.png"}, "stats": {"kills": 19, "deaths": 10, "assists": 6, "avg_damage": 129}}, {"id": "8c9e7d2e-2abd-5bbd-ac5d-3e4884b4d87f", "name": "Piplup", "team": "Blue", "rank": {"name": "GOLD 3", "color": "eccf56ff", "background": "eec56aff", "icon": "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/14/largeicon.png"}, "agent": {"name": "Sage", "description": "Die chinesische W\u00e4chterin Sage garantiert Sicherheit f\u00fcr sich und ihr Team, wohin auch immer sie geht. Dank ihrer einzigartigen F\u00e4higkeit, gefallene Verb\u00fcndete wiederzuerwecken und Angriffe abzuwehren, ist sie auf dem Schlachtfeld das Auge des Sturms.", "icon": "https://media.valorant-api.com/agents/569fdd95-4d10-43ab-ca70-79becc718b46/displayicon.png"}, "stats": {"kills": 12, "deaths": 15, "assists": 4, "avg_damage": 130}}, {"id": "3fb99db5-f6a6-5ae1-afd8-4dceccadb0fe", "name": "hngpophng", "team": "Blue", "rank": {"name": "SILVER 3", "color": "bbc2c2ff", "background": "d1d1d1ff", "icon": "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/11/largeicon.png"}, "agent": {"name": "Chamber", "description": "Gut gekleidet und bewaffnet vertreibt der franz\u00f6sische Waffendesigner Chamber Angreifer mit t\u00f6dlicher Pr\u00e4zision. Mit seinem individuellen Arsenal beh\u00e4lt er alles im Blick, schaltet Gegner aus der Ferne aus und hat f\u00fcr jeden Plan einen Plan\u00a0B.", "icon": "https://media.valorant-api.com/agents/22697a3d-45bf-8dd7-4fec-84a9e28c69d7/displayicon.png"}, "stats": {"kills": 12, "deaths": 16, "assists": 4, "avg_damage": 140}}, {"id": "73dfe274-baf2-5b88-b2e4-cf5d39766d60", "name": "anime th1ghs", "team": "Blue", "rank": {"name": "GOLD 3", "color": "eccf56ff", "background": "eec56aff", "icon": "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/14/largeicon.png"}, "agent": {"name": "Reyna", "description": "Reyna kommt aus dem Herzen Mexikos, brilliert in K\u00e4mpfen gegen einzelne Gegner und wird mit jedem Kill st\u00e4rker. K\u00f6nnen ist das einzige Limit f\u00fcr ihr Potenzial und sie h\u00e4ngt sehr von der erbrachten Leistung ab. ", "icon": "https://media.valorant-api.com/agents/a3bfb853-43b2-7238-a4f1-ad90e9e46bcc/displayicon.png"}, "stats": {"kills": 21, "deaths": 15, "assists": 2, "avg_damage": 163}}]}
 
-languageFile = None
-
-try:
-    languageFile = json.load(open(config['language_file']))
-except FileNotFoundError:
-    pass
-
-if languageFile is None:
-    print("Cannot find the requested language file")
-    sys.exit()
-
-lang_invalid_agent = None
-lang_available_agents = None
-lang_invalid_region = None
-lang_valorant_not_running = None
-lang_try_again = None
-lang_pregame_state = None
-lang_not_pregame_state = None
-
-try:
-    lang_invalid_agent = languageFile['invalid_agent']
-    lang_available_agents = languageFile['available_agents']
-    lang_invalid_region = languageFile['invalid_region']
-    lang_valorant_not_running = languageFile['valorant_not_running']
-    lang_try_again = languageFile['try_again']
-    lang_pregame_state = languageFile['pregame_state']
-    lang_not_pregame_state = languageFile['pregame_not_found']
-except:
-    print("Your language file doesn't sticks to the default format!")
-    sys.exit()
-
-delayTime = config['time_between_requests']
-agentShouldBe = config['agent_to_pick'].lower()
-pickAgent = None
-availableAgents = ""
-clientRegion = config['region'].lower()
-availableRegions = ["na", "eu", "latam", "br", "ap", "kr", "pbe"]
-
-agentsData = requests.get("https://valorant-api.com/v1/agents", params={'isPlayableCharacter': True}).json()['data']
-for agent in agentsData:
-    availableAgents = availableAgents + agent['displayName'] + ", "
-    if agent['displayName'].lower() == agentShouldBe:
-        pickAgent = agent['uuid']
-        break
-availableAgents = availableAgents[0:len(availableAgents) - 2]
-
-if pickAgent is None:
-    print(agentShouldBe, lang_invalid_agent)
-    print(lang_available_agents, availableAgents)
-    sys.exit()
-
-if not clientRegion in availableRegions:
-    print(clientRegion, lang_invalid_region, availableRegions)
-    sys.exit()
-# CONFIG END
-
-# LOCALCLIENT
-client = valclient.Client(region=clientRegion)
-
-# CHECK IF VALORANT IS RUNNING
-programRunning = True
-
-activated = False
-while not activated:
-    try:
-        client.activate()
-        activated = True
-    except HandshakeError:
-        print(lang_valorant_not_running)
-        result = input(lang_try_again)
-        if not result == 'y':
-            activated = True
-            programRunning = False
-
-while programRunning:
-    try:
-        client.pregame_select_character(pickAgent)
-        client.pregame_lock_character(pickAgent)
-        print(lang_pregame_state)
-    except:
-        print(lang_not_pregame_state)
-    time.sleep(delayTime)
+# Current or live matches
+#client.pregame_fetch_match()
+#client.coregame_fetch_player()

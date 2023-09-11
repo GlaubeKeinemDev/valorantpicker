@@ -1,9 +1,0 @@
-{
-  "invalid_agent": "is not a valid agent",
-  "available_agents": "available agents:",
-  "invalid_region": "isn't a valid region. Regions:",
-  "valorant_not_running": "Valorant isn't running",
-  "try_again": "Try again? (y/n): ",
-  "pregame_state": "Pregame found",
-  "pregame_not_found": "Currently not in a pregame"
-}

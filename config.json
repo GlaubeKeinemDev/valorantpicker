@@ -1,6 +1,0 @@
-{
-  "time_between_requests": 1,
-  "agent_to_pick": "Sage",
-  "region": "eu",
-  "language_file": "lang_en.json"
-}

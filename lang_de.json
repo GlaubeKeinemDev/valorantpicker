@@ -1,9 +1,0 @@
-{
-  "invalid_agent": "ist kein Valorant Agent",
-  "available_agents": "Verfügbare Agents:",
-  "invalid_region": "ist keine verfügbare Region. Verfügbare Regionen:",
-  "valorant_not_running": "Valorant läuft nicht",
-  "try_again": "Erneut versuchen? (y/n): ",
-  "pregame_state": "Pregame gefunden",
-  "pregame_not_found": "Aktuell kein Pregame State"
-}
