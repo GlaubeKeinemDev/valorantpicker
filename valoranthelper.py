@@ -52,7 +52,7 @@ class ValorantHelper:
         seasonId = matchDetails["matchInfo"]["seasonId"]
         playerDetails = matchDetails["players"]
 
-        localPlayerDetails = []
+        localPlayerDetails = {}
 
         team_blue = []
         team_red = []
@@ -61,18 +61,21 @@ class ValorantHelper:
 
         for player in playerDetails:
             agentInfo = self.getAgentInfo(player["characterId"])
+            playerrank = self.getRankInfo(player["competitiveTier"], seasonId, False)
 
             if not self.puuid is None and player["subject"] == self.puuid:
                 compUpdates = self.getCompetiveUpdates(matchDetails["matchInfo"]["matchId"])
 
-                localPlayerDetails.append({
+                localPlayerDetails = {
                     "id": player["subject"],
                     "playername": player["gameName"],
                     "playeragent": player["characterId"],
                     "playeragenticon": agentInfo["icon"],
+                    "playerrank": playerrank["name"],
+                    "playerrankicon": playerrank["icon"],
                     "team": player["teamId"],
                     "competitveupdates": compUpdates
-                })
+                }
 
             stats = self.getStatsInfo(player)
 
@@ -80,7 +83,7 @@ class ValorantHelper:
                 "id": player["subject"],
                 "name": player["gameName"],
                 "team": player["teamId"],
-                "rank": self.getRankInfo(player["competitiveTier"], seasonId, False),
+                "rank": playerrank,
                 "agent": agentInfo,
                 "stats": stats
             }

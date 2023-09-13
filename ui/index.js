@@ -201,50 +201,92 @@ function openPage(event, pageId) {
 }
 
 function getMatchOverview(jsonMatchInfo) {
-    if (jsonMatchInfo == undefined) {
+    if (jsonMatchInfo === undefined) {
         return "";
     }
 
     jsonConverted = JSON.parse(jsonMatchInfo);
-    isCompetitveUpdates = false;
-    if(jsonConverted.player.competitveupdates && Object.keys(jsonConverted.player.competitveupdates).length > 0) {
-        isCompetitveUpdates = true;
-    }
 
-    html = `<div class='col-12 row' id='match_overview_${jsonMatchInfo.gameId}'>`;
-    if(isCompetitveUpdates) {
+    isCompetitveUpdates = !!(jsonConverted.player.competitveupdates && Object.keys(jsonConverted.player.competitveupdates).length > 0);
+
+    html = `<div class='col-12 row' id='match_overview_${jsonConverted.gameId}'>`;
+    if (isCompetitveUpdates) {
         html = html + `<div class='col-9'>`
     }
 
-    html = html + `<div class="match_overview_image">`;
-    html = html + `<img src="${jsonConverted.map.icon}" alt="${jsonConverted.map.name}">`;
-    html = html + `<img src="${jsonConverted.player.playeragenticon}" alt="${jsonConverted.player.playeragent}">`;
+    const date = new Date(jsonConverted.startTime);
 
+    html = html + `<div class="d-flex match_overview_timestamp">`;
+    html = html + `<p class="my-0 ml-4 light-gray">${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}</p>`;
+    html = html + `<p class="m-0 pl-2 darker-gray">${date.getHours()}:${date.getMinutes()}</p>`;
     html = html + `</div>`;
 
-    if(isCompetitveUpdates) {
+    html = html + `<div class="d-flex match_overview_image">`;
+    html = html + `<img src="${jsonConverted.map.icon}" alt="${jsonConverted.map.name}" class="map_image">`;
+    html = html + `<img src="${jsonConverted.player.playeragenticon}" alt="${jsonConverted.player.playeragent}" height="100" class="agent_image">`;
+    html = html + `<h2 class="headline">COMPETITIVE</h2>`
+    html = html + `</div>`;
+
+    if (isCompetitveUpdates) {
         html = html + `</div>`
-        /* Kreis anzeigen mit richtiger Füllung */
-        html = html + `<div class='match_overview_competitive_updates'>
-        
-        </div>`
+
+        html = html + `<div class='col-3 row match_overview_competitive_updates'>`;
+
+        html = html + `<div class='col-5 my-auto match_overview_rating_updates'>`;
+
+        let positiveRankUpdate = jsonConverted.player.competitveupdates.ratingAfter > jsonConverted.player.competitveupdates.ratingBefore;
+
+        if (positiveRankUpdate) {
+            html = html + `<span class="m-0 green match_overview_ratingdifference">+${jsonConverted.player.competitveupdates.ratingDifference}</span>`;
+        } else {
+            html = html + `<span class="m-0 red match_overview_ratingdifference">${jsonConverted.player.competitveupdates.ratingDifference}</span>`;
+        }
+
+        html = html + `<span class="my-0 match_overview_current_rating">${jsonConverted.player.competitveupdates.ratingAfter}</span>`;
+        html = html + `</div>`;
+
+        html = html + `<div class='col-7 d-flex match_overview_circle'>`;
+        html = html + `<div class='circle_inner my-auto'>`;
+
+        if (positiveRankUpdate) {
+            let defaultValue = (360 / 100) * jsonConverted.player.competitveupdates.ratingBefore;
+            let finishValue = (360 / 100) * jsonConverted.player.competitveupdates.ratingAfter;
+
+            html = html + `<div class='circle' style="background: conic-gradient(#ccc ${defaultValue}deg, transparent 0deg)"></div>`;
+            html = html + `<div class='circle second' style="background: conic-gradient(#407969 ${finishValue}deg, #5e5e5e 0deg)"></div>`;
+        } else {
+            let defaultValue = (360 / 100) * jsonConverted.player.competitveupdates.ratingAfter;
+            let finishValue = (360 / 100) * jsonConverted.player.competitveupdates.ratingBefore;
+
+            html = html + `<div class='circle' style="background: conic-gradient(#ccc ${defaultValue}deg, transparent 0deg)"></div>`;
+            html = html + `<div class='circle second' style="background: conic-gradient(#f05c57 ${finishValue}deg, #5e5e5e 0deg)"></div>`;
+        }
+
+        html = html + `<img src='${jsonConverted.player.playerrankicon}' alt='${jsonConverted.player.playerrank}' height=60 width=60 class="match_overview_currentrank">`
+
+        html = html + `</div>`;
+        html = html + `</div>`;
+
+        html = html + `</div>`;
     }
     html = html + "</div>";
+
+    return html;
 }
 
 /* Match info | detailed = Sortiert mit stats... */
 function getMatchDetailsHtml(jsonMatchInfo, detailed) {
-    if (jsonMatchInfo == undefined) {
+    if (jsonMatchInfo === undefined) {
         return "";
     }
 
-    if (detailed == undefined) {
+    if (detailed === undefined) {
         detailed = false;
     }
 
     jsonConverted = JSON.parse(jsonMatchInfo);
 
-    html = "<div class='row m-0 match_info " + (detailed ? "detailed" : "") +"'>";
+    html = "<div class='row m-0 match_info " + (detailed ? "detailed" : "") + "'>";
 
     map = `<div class='col-12 d-flex map_info'><img class='w-100 mx-auto map_image' src='${jsonConverted.map.icon}' height="100"></div>`;
     html = html + map;
@@ -292,7 +334,7 @@ function getMatchDetailsHtml(jsonMatchInfo, detailed) {
 function getPlayerHtml(player, detailed) {
     statsDetails = ""
 
-    if(detailed) {
+    if (detailed) {
         statsDetails = `
         <div class="d-flex px-4 my-auto playerstatistics vertical-line">
             <span class="avgdamage">${player.stats.avg_damage}</span>

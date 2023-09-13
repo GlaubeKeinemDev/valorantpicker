@@ -308,7 +308,6 @@ label:active:after {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: conic-gradient(#ccc 60deg, transparent 0deg);
 }
 
 .circle::before {
@@ -329,12 +328,70 @@ label:active:after {
     transform: translateY(-100%);
 }
 
-.circle.green {
-    background: conic-gradient(#407969 120deg, #5e5e5e 0deg);
+.red {
+    color: #ff2900;
 }
 
-.circle.red {
-    background: conic-gradient(#f05c57 60deg, #5e5e5e 0deg);
+.green {
+    color: #66CD00;
+}
+
+.light-gray {
+    color: #f0f0f0;
+}
+
+.darker-gray {
+    color: #b0b0b0;
+}
+
+/* match overview */
+#match_history .match_overview_image {
+    position: relative;
+}
+
+#match_history .match_overview_image .map_image {
+    height: 100px;
+    width: 100%;
+    object-fit: cover;
+    border-radius: 100px;
+    clip-path: inset(0 10px 0 10px round 100px);
+}
+
+#match_history .match_overview_image .agent_image {
+    position: absolute;
+    margin-left: 1rem;
+    border-top-left-radius: 100px;
+    border-bottom-left-radius: 100px;
+}
+
+#match_history .match_overview_image .headline {
+    position: absolute;
+    font-size: 3rem;
+    font-weight: 300;
+    -webkit-box-shadow: 6px 11px 8px 2px rgba(95,95,95,0.95);
+    box-shadow: 6px 11px 8px 2px rgba(95,95,95,0.95);
+    margin: 0;
+}
+
+#match_history .match_overview_competitive_updates .match_overview_circle .circle_inner {
+    position: relative;
+}
+
+#match_history .match_overview_competitive_updates .match_overview_circle .match_overview_currentrank {
+    position: absolute;
+    transform: translateX(calc(100% - 50px)) translateY(calc(-100% - 10px));
+    z-index: 2;
+}
+
+#match_history .match_overview_competitive_updates .match_overview_rating_updates {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+}
+
+#match_history .match_overview_competitive_updates .match_overview_rating_updates .match_overview_current_rating {
+    margin-left: 8px;
 }
 
 
