@@ -1,6 +1,4 @@
 import json
-import time
-
 import valclient
 from valclient.exceptions import HandshakeError
 import requests
@@ -62,6 +60,7 @@ class ValorantHelper:
         for player in playerDetails:
             agentInfo = self.getAgentInfo(player["characterId"])
             playerrank = self.getRankInfo(player["competitiveTier"], seasonId, False)
+            stats = self.getStatsInfo(player)
 
             if not self.puuid is None and player["subject"] == self.puuid:
                 compUpdates = self.getCompetiveUpdates(matchDetails["matchInfo"]["matchId"])
@@ -74,10 +73,9 @@ class ValorantHelper:
                     "playerrank": playerrank["name"],
                     "playerrankicon": playerrank["icon"],
                     "team": player["teamId"],
-                    "competitveupdates": compUpdates
+                    "competitveupdates": compUpdates,
+                    "stats": stats
                 }
-
-            stats = self.getStatsInfo(player)
 
             data = {
                 "id": player["subject"],
@@ -100,6 +98,7 @@ class ValorantHelper:
             "startTime": matchDetails["matchInfo"]["gameStartMillis"],
             "gameLength": matchDetails["matchInfo"]["gameLengthMillis"],
             "gameId": matchDetails["matchInfo"]["matchId"],
+            "mode": matchDetails["matchInfo"]["queueID"],
             "player": localPlayerDetails,
             "map": self.getMapInfo(mapUrl),
             "team_blue": team_blue,
@@ -157,7 +156,6 @@ class ValorantHelper:
             if agent["uuid"] == uuid:
                 return {
                     "name": agent["displayName"],
-                    "description": agent["description"],
                     "icon": agent["displayIcon"]
                 }
         return {}
@@ -195,14 +193,13 @@ class ValorantHelper:
 
     def getTeamStats(self, matchDetails):
         team_stats = matchDetails["teams"]
-        raw_data = []
+        raw_data = {}
 
         for teams in team_stats:
             data = {
                 "won": teams["won"],
                 "roundsWon": teams["roundsWon"]
             }
-            raw_data.append({teams["teamId"]: data})
+            raw_data[teams["teamId"]] = data
 
         return raw_data
-

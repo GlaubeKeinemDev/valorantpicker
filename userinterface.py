@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWebChannel import QWebChannel
 from PyQt5.QtWidgets import QApplication, QMainWindow
-from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
 from PyQt5.QtCore import QUrl, QObject, pyqtSlot, QTimer
 from PyQt5.QtGui import QIcon
 from valoranthelper import ValorantHelper
@@ -75,7 +75,6 @@ class Bridge(QObject):
 
     @pyqtSlot(bool)
     def updateLockEnable(self, value):
-        print("hier klingelts ", value)
         self.__config.setLockEnabled(value)
 
     @pyqtSlot(str)
@@ -111,9 +110,29 @@ class Bridge(QObject):
     def isLockEnabled(self):
         return self.__config.isLockEnabled()
 
+    @pyqtSlot(int, int, result=str)
+    def getMatchDetails(self, startIndex, endIndex):
+        result = []
+        if val_helper.checkIfRunning():
+            history = val_helper.client.fetch_match_history()["History"]
+            if len(history) < endIndex:
+                endIndex = len(history)
+            for x in range(startIndex, endIndex, 1):
+                matchId = history[x]["MatchID"]
+                details = val_helper.client.fetch_match_details(matchId)
+                jsonDetails = val_helper.getFullMatchJsonString(details)
+                result.append(jsonDetails)
+        print(result)
+        return json.dumps(result)
+
     @pyqtSlot(str)
     def printConsole(self, value):
         print(value)
+
+class WebEnginePage(QWebEnginePage):
+
+    def javaScriptConsoleMessage(self, level, message, lineNumber, sourceID):
+        print("javaScriptConsoleMessage: ", message, lineNumber, sourceID)
 
 
 class MainWindow(QMainWindow):
@@ -139,6 +158,7 @@ class MainWindow(QMainWindow):
 
         self.web_view = QWebEngineView()
         self.setCentralWidget(self.web_view)
+        self.web_view.setPage(WebEnginePage(self.web_view))
 
         ui_path = "/ui/index.html"
         self.web_view.setUrl(QUrl.fromLocalFile(ui_path))
@@ -149,7 +169,7 @@ class MainWindow(QMainWindow):
         self.web_channel.registerObject("clientbridge", self.bridge)
         self.web_view.page().setWebChannel(self.web_channel)
 
-        self.hookIntoMainLoop()
+        #self.hookIntoMainLoop()
 
     def hookIntoMainLoop(self):
         self.timer = QTimer()
@@ -157,8 +177,6 @@ class MainWindow(QMainWindow):
         self.timer.start(10000)
 
     def mainloop(self):
-        #self.web_view.page().runJavaScript("showAlert({});")
-
         if val_helper:
             if self.bridge.getConfig().isLockEnabled():
                 try:
@@ -168,14 +186,19 @@ class MainWindow(QMainWindow):
                         val_helper.lockAgent(self.bridge.getConfig().getLockAgent())
                 except:
                     print("Vermutlich kein pregame!")
+            print("mainloop python")
+            self.web_view.page().runJavaScript("checkIfClientIsRunning(false);")
 
 
 if __name__ == "__main__":
+    #print(val_helper.getFullMatchJsonString(details))
+    window = MainWindow()
+    window.show()
+    '''
     history = val_helper.client.fetch_match_history(queue_id="competitive")
     matchId = history["History"][0]["MatchID"]
     details = val_helper.client.fetch_match_details(matchId)
-    print(val_helper.getFullMatchJsonString(details))
-    window = MainWindow()
-    window.show()
-
+    jsonDetails = val_helper.getFullMatchJsonString(details)
+    print(jsonDetails)
+    '''
     sys.exit(app.exec_())
