@@ -123,6 +123,9 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         const matchId = $(this).attr('id').split("_")[2];
+        setTimeout(() => {
+            $('#match_history').scrollTop(0);
+        }, 290);
         $('#match_details_' + matchId).removeClass('hide');
     });
 });
