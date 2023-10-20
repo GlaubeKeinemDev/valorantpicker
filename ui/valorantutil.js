@@ -1,6 +1,9 @@
 /* Check if clientbridge could be found */
 var clientbridge;
 
+var matchHistoryStartIndex = 0;
+var matchHistoryEndIndex = 3;
+
 if (typeof QWebChannel !== 'undefined') {
     new QWebChannel(qt.webChannelTransport, function (channel) {
         clientbridge = channel.objects.clientbridge;
@@ -8,16 +11,6 @@ if (typeof QWebChannel !== 'undefined') {
     });
 } else {
     initialStuff();
-}
-
-async function test() {
-    if (clientbridge) {
-        jsonRaw = await clientbridge.getMatchDetails(0,12);
-        jsonString = JSON.parse(jsonRaw);
-        for  (var i = 0; i < jsonString.length; i++) {
-            renderMatchOverview(jsonString[i], true);
-        }
-    }
 }
 
 /* Sets the client name in the ui */
@@ -56,31 +49,36 @@ function initialStuff() {
         setClientName();
         checkIfClientIsRunning(false);
         initializeConfigSettings();
-
-
-        /* Match test
-        test();*/
     }
+}
+
+/* Shows Frontend client is NOT running */
+function clientNotRunningFrontend() {
+    $('#modal_clientrunning').modal('show');
+    if (!$('#main_content').hasClass('blur_out')) {
+        $('#main_content').addClass('blur_out');
+    }
+}
+
+/* Hides Frontend client is running */
+function clientRunningFrontend() {
+    $('#main_content').removeClass('blur_out');
+    $('#modal_clientrunning').modal('hide');
+
+    initialStuff();
 }
 
 /* Checks if client is running -> shows modal to refresh if client isn't running */
 async function checkIfClientIsRunning(click) {
     if (clientbridge) {
         if (await clientbridge.checkIfClientRunning()) {
-            $('#main_content').removeClass('blur_out');
-            $('#modal_clientrunning').modal('hide');
+            clientRunningFrontend();
         } else if (!click) {
-            $('#modal_clientrunning').modal('show');
-            if (!$('#main_content').hasClass('blur_out')) {
-                $('#main_content').addClass('blur_out');
-            }
+            clientNotRunningFrontend();
         }
     } else {
         if (!click) {
-            $('#modal_clientrunning').modal();
-            if (!$('#main_content').hasClass('blur_out')) {
-                $('#main_content').addClass('blur_out');
-            }
+            clientNotRunningFrontend();
         }
     }
 
@@ -95,6 +93,27 @@ async function checkIfClientIsRunning(click) {
     }
 }
 
+async function loadMoreMatches() {
+    $('#match_history_spinner button').addClass('d-none');
+    $('#match_history_spinner .spinner').removeClass('d-none');
+
+    setTimeout(function () {
+        $('#match_history_spinner button').removeClass('d-none');
+        $('#match_history_spinner .spinner').addClass('d-none');
+    }, 2000)
+
+    if(clientbridge) {
+        jsonRaw = await clientbridge.getMatchDetails(matchHistoryStartIndex,matchHistoryEndIndex);
+        jsonString = JSON.parse(jsonRaw);
+        for  (var i = 0; i < jsonString.length; i++) {
+            renderMatchOverview(jsonString[i], true);
+        }
+
+        matchHistoryStartIndex += jsonString.length;
+        matchHistoryEndIndex += jsonString.length;
+    }
+}
+
 function renderMatchOverview(jsonMatchInfo, convert) {
     if (jsonMatchInfo === undefined) {
         return "";
@@ -105,7 +124,6 @@ function renderMatchOverview(jsonMatchInfo, convert) {
         jsonMatchInfo = jsonMatchInfo.replace(/'/g, "\"");
         jsonConverted = JSON.parse(jsonMatchInfo);
     }
-    console.log(jsonConverted)
 
     isCompetitveUpdates = !!(jsonConverted.player.competitveupdates && Object.keys(jsonConverted.player.competitveupdates).length > 0);
 
@@ -203,7 +221,7 @@ function renderMatchOverview(jsonMatchInfo, convert) {
 
     html = html + "</div>";
 
-    document.getElementById("match_history").innerHTML += html;
+    document.getElementById("match_history_container").innerHTML += html;
 }
 
 /* Match info | detailed = Sortiert mit stats... | closebutton = soll ein schließen button angezeigt werden | convert = matchinfo erneut konvertieren? */
@@ -303,7 +321,9 @@ function getPlayerHtml(player, detailed) {
                         <img class="image" src="${player.agent.icon}" width="50" height="50">
                     </div>
                     <span class="pl-2 w-100 my-auto player_name">${player.name}</span>
+                    <div class="player_rank_container">
                     <img class="p-2 player_rank" src="${player.rank.icon}" width="50" height="50">
+                    </div>
                     ${statsDetails}
                 </div>
             </div>`;
