@@ -276,7 +276,7 @@ label:active:after {
 }
 
 .match_info.detailed .player_card_inner .player_name {
-    max-width: 640px;
+    max-width: 460px;
 }
 
 .match_info .team_blue .player_card_inner {
@@ -289,6 +289,17 @@ label:active:after {
 
 .match_info .team_blue .player_card_inner .player_name {
     color: #68c1aa;
+}
+
+.match_info.detailed .player_card_inner .player_rank_container {
+    position: relative;
+    height: 50px;
+    width: 50px;
+}
+
+.match_info.detailed .player_card_inner .player_rank_container .player_rank {
+    position: absolute;
+    top: 4px;
 }
 
 
