@@ -1,11 +1,12 @@
 import json
+from datetime import datetime
+import pytz
 import valclient
 from valclient.exceptions import HandshakeError
 import requests
 
 
 class ValorantHelper:
-
     def __init__(self):
         self.client = valclient.Client(region='eu')
         self.client_running = False
@@ -19,6 +20,7 @@ class ValorantHelper:
         self.__mapInfo = requests.get(f"https://valorant-api.com/v1/maps").json()['data']
         self.__competitiveInfo = requests.get(f"https://valorant-api.com/v1/competitivetiers/").json()['data']
 
+
     def checkIfRunning(self):
         try:
             self.client.activate()
@@ -29,17 +31,73 @@ class ValorantHelper:
             self.client_running = False
         return self.client_running
 
+
     def getName(self):
         if self.checkIfRunning():
             return self.client.player_name
         else:
             return ""
 
+
     def selectAgent(self, agent):
         self.client.pregame_select_character(agent)
 
+
     def lockAgent(self, agent):
         self.client.pregame_lock_character(agent)
+
+    # matchDetails = client.coregame_fetch_match
+    def getCoreMatchJsonString(self, matchDetails):
+        if not self.client_running:
+            return {}
+
+        mapUrl = matchDetails["MapID"]
+        playerDetails = matchDetails["Players"]
+
+        localPlayerDetails = {}
+
+        team_blue = []
+        team_red = []
+
+        for player in playerDetails:
+            agentInfo = self.getAgentInfo(player["CharacterID"])
+            playerrank = self.getRankInfo(player["SeasonalBadgeInfo"]["Rank"], player["SeasonalBadgeInfo"]["SeasonID"],
+                                          False)
+
+            if not self.puuid is None and player["Subject"] == self.puuid:
+                localPlayerDetails = {
+                    "id": player["Subject"],
+                    "playername": self.client.player_name,
+                    "playeragent": player["CharacterID"],
+                    "playeragenticon": agentInfo["icon"],
+                    "playerrank": playerrank["name"],
+                    "playerrankicon": playerrank["icon"],
+                    "team": player["TeamID"],
+                }
+
+            data = {
+                "id": player["Subject"],
+                "name": self.getPlayerNameByUUID(player["Subject"]),
+                "team": player["TeamID"],
+                "rank": playerrank,
+                "agent": agentInfo,
+            }
+            if player["TeamID"] == "Red":
+                team_blue.append(data)
+            else:
+                team_red.append(data)
+
+        json_raw = {
+            "gameId": matchDetails["MatchID"],
+            "mode": matchDetails["MatchmakingData"]["QueueID"],
+            "player": localPlayerDetails,
+            "map": self.getMapInfo(mapUrl),
+            "team_blue": team_blue,
+            "team_red": team_red
+        }
+
+        return json.dumps(json_raw)
+
 
     # matchDetails = client.fetch_match_details(matchId)
     def getFullMatchJsonString(self, matchDetails):
@@ -109,7 +167,11 @@ class ValorantHelper:
 
         return json.dumps(json_raw)
 
+
     def getRankInfo(self, input, seasonId, extractTier=True):
+        if seasonId == "" or seasonId == "{}":
+            seasonId = None
+
         tier = input
 
         if extractTier:
@@ -118,9 +180,14 @@ class ValorantHelper:
         competitiveUuid = None
 
         for s in self.__seasonInfo:
-            if s['seasonUuid'] == seasonId:
-                competitiveUuid = s['competitiveTiersUuid']
-                break
+            if seasonId is not None:
+                if s['seasonUuid'] == seasonId:
+                    competitiveUuid = s['competitiveTiersUuid']
+                    break
+            else:
+                if self.isCurrentlyActive(s['startTime'], s['endTime']):
+                    competitiveUuid = s['competitiveTiersUuid']
+                    break
 
         if competitiveUuid:
             competitiveRanks = None
@@ -142,6 +209,20 @@ class ValorantHelper:
                     }
         return {}
 
+
+    def isCurrentlyActive(self, start, end):
+        start_time = datetime.strptime(start, "%Y-%m-%dT%H:%M:%SZ")
+        end_time = datetime.strptime(end, "%Y-%m-%dT%H:%M:%SZ")
+
+        utc = pytz.timezone("UTC")
+        start_time = utc.localize(start_time)
+        end_time = utc.localize(end_time)
+
+        current_time = datetime.now(pytz.utc)
+
+        return start_time <= current_time <= end_time
+
+
     def getMapInfo(self, mapUrl):
         for info in self.__mapInfo:
             if info["mapUrl"] == mapUrl:
@@ -151,6 +232,7 @@ class ValorantHelper:
                 }
         return {}
 
+
     def getAgentInfo(self, uuid):
         for agent in self.__agentsData:
             if agent["uuid"] == uuid:
@@ -159,6 +241,7 @@ class ValorantHelper:
                     "icon": agent["displayIcon"]
                 }
         return {}
+
 
     def getStatsInfo(self, playerObject):
         if not "stats" in playerObject or not "roundDamage" in playerObject:
@@ -180,6 +263,7 @@ class ValorantHelper:
             "avg_damage": int(avgDamage)
         }
 
+
     def getCompetiveUpdates(self, matchId):
         for updates in self.fetchedCompetitveUpdates['Matches']:
             if updates['MatchID'] == matchId:
@@ -190,6 +274,7 @@ class ValorantHelper:
                 }
 
         return {}
+
 
     def getTeamStats(self, matchDetails):
         team_stats = matchDetails["teams"]
@@ -203,3 +288,18 @@ class ValorantHelper:
             raw_data[teams["teamId"]] = data
 
         return raw_data
+
+
+    def getPlayerNameByUUID(self, puuid):
+        history = self.client.fetch_match_history(puuid, 0, 1)
+        if len(history) < 1:
+            return "N/A"
+
+        details = self.client.fetch_match_details(history["History"][0]["MatchID"])
+
+        if details is None:
+            return "N/A"
+
+        for player in details["players"]:
+            if player["subject"] == puuid:
+                return player["gameName"]
