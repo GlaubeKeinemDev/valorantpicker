@@ -1,8 +1,10 @@
 import sys
+import time
+
 from PyQt5.QtWebChannel import QWebChannel
 from PyQt5.QtWidgets import QApplication, QMainWindow
-from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
-from PyQt5.QtCore import QUrl, QObject, pyqtSlot, QTimer
+from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage, QWebEngineSettings
+from PyQt5.QtCore import QUrl, QObject, pyqtSlot, QThreadPool, QRunnable
 from PyQt5.QtGui import QIcon
 from valoranthelper import ValorantHelper
 import os
@@ -122,17 +124,58 @@ class Bridge(QObject):
                 details = val_helper.client.fetch_match_details(matchId)
                 jsonDetails = val_helper.getFullMatchJsonString(details)
                 result.append(jsonDetails)
-        print(result)
         return json.dumps(result)
 
-    @pyqtSlot(str)
-    def printConsole(self, value):
-        print(value)
 
 class WebEnginePage(QWebEnginePage):
 
     def javaScriptConsoleMessage(self, level, message, lineNumber, sourceID):
         print("javaScriptConsoleMessage: ", message, lineNumber, sourceID)
+
+
+class Worker(QRunnable):
+
+    def __init__(self, bridge, web_view):
+        super().__init__()
+        self.bridge = bridge
+        self.web_view = web_view
+
+        self.current_game_id = None
+
+    def work(self):
+        print("mainloop neu")
+        if val_helper is not None:
+            if self.bridge.getConfig().isLockEnabled():
+                try:
+                    val_helper.selectAgent(self.bridge.getConfig().getLockAgent())
+
+                    if self.bridge.getConfig().getLockType() == 'Instalock':
+                        val_helper.lockAgent(self.bridge.getConfig().getLockAgent())
+                except:
+                    pass
+
+            # Current Match stuff
+            try:
+                self.current_game_id = val_helper.client.pregame_fetch_player()['MatchID']
+            except:
+                pass
+
+            if self.current_game_id is not None:
+                try:
+                    val_helper.client.coregame_fetch_match(self.current_game_id)
+                except:
+                    self.current_game_id = None
+
+            if val_helper.checkIfRunning():
+                self.web_view.page().runJavaScript("clientRunningFrontend();")
+            else:
+                self.web_view.page().runJavaScript("clientNotRunningFrontend();")
+
+    def run(self):
+        time.sleep(2)
+        while True:
+            time.sleep(3)
+            self.work()
 
 
 class MainWindow(QMainWindow):
@@ -145,7 +188,7 @@ class MainWindow(QMainWindow):
         width = 1000
         height = 650
 
-        self.setWindowTitle("Agent Picker")
+        self.setWindowTitle("Valorant Helper")
         self.setGeometry(0, 0, width, height)
         self.setWindowIcon(QIcon('ui/assets/app_icon.png'))
         self.setFixedSize(width, height)
@@ -169,36 +212,29 @@ class MainWindow(QMainWindow):
         self.web_channel.registerObject("clientbridge", self.bridge)
         self.web_view.page().setWebChannel(self.web_channel)
 
-        #self.hookIntoMainLoop()
+        # Inspektor
+        self.web_view.settings().setAttribute(QWebEngineSettings.JavascriptEnabled, True)
+        self.web_view.settings().setAttribute(QWebEngineSettings.PluginsEnabled, True)
+        self.inspector = QWebEngineView()
+        self.inspector.setWindowTitle("inspektor")
+        self.web_view.page().setDevToolsPage(self.inspector.page())
+        self.inspector.show()
+
+        self.web_view.page().runJavaScript("console.log(\"Javascript Bridge init\");")
+        self.thread_pool = QThreadPool.globalInstance()
+        self.hookIntoMainLoop()
 
     def hookIntoMainLoop(self):
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.mainloop)
-        self.timer.start(10000)
+        worker = Worker(self.bridge, self.web_view)
+        worker.setAutoDelete(True)
+        self.thread_pool.start(worker)
 
-    def mainloop(self):
-        if val_helper:
-            if self.bridge.getConfig().isLockEnabled():
-                try:
-                    val_helper.selectAgent(self.bridge.getConfig().getLockAgent())
-
-                    if self.bridge.getConfig().getLockType() == 'Instalock':
-                        val_helper.lockAgent(self.bridge.getConfig().getLockAgent())
-                except:
-                    print("Vermutlich kein pregame!")
-            print("mainloop python")
-            self.web_view.page().runJavaScript("checkIfClientIsRunning(false);")
+    def closeEvent(self, event):
+        self.thread_pool.clear()
+        event.accept()
 
 
 if __name__ == "__main__":
-    #print(val_helper.getFullMatchJsonString(details))
     window = MainWindow()
     window.show()
-    '''
-    history = val_helper.client.fetch_match_history(queue_id="competitive")
-    matchId = history["History"][0]["MatchID"]
-    details = val_helper.client.fetch_match_details(matchId)
-    jsonDetails = val_helper.getFullMatchJsonString(details)
-    print(jsonDetails)
-    '''
     sys.exit(app.exec_())
